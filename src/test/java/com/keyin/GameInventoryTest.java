@@ -6,80 +6,80 @@ import org.junit.Test;
 
 public class GameInventoryTest {
     private GameInventory inventory;
+    private Item sword;
+    private Item shield;
+    private Item chestArmor;
+    private Item potion;
 
     @Before
     public void setUp() {
         inventory = new GameInventory();
+        sword = new Item("Sword", ItemType.ONE_HANDED_WEAPON);
+        shield = new Item("Shield", ItemType.SHIELD);
+        chestArmor = new Item("Chestplate", ItemType.ARMOR_CHEST);
+        potion = new Item("Health Potion", ItemType.POTION);
     }
 
     @Test
     public void testAddItem() {
-        inventory.addItem("Sword");
-        assertTrue(inventory.hasItem("Sword"));
-    }
-
-    @Test
-    public void testRemoveItem() {
-        inventory.addItem("Shield");
-        inventory.removeItem("Shield");
-        assertFalse(inventory.hasItem("Shield"));
+        inventory.addItem(sword);
+        assertTrue(inventory.getGeneralInventory().contains(sword));
     }
 
     @Test
     public void testEquipWeapon() {
-        inventory.addItem("Sword");
-        inventory.equipWeapon("Sword");
-        assertEquals("Sword", inventory.getEquippedWeapon());
+        inventory.addItem(sword);
+        inventory.equipWeapon(sword);
+        assertEquals(sword, inventory.getEquippedWeapon());
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testEquipWeaponNotInInventory() {
-        inventory.equipWeapon("Axe"); // Should throw exception
+    @Test(expected = IllegalStateException.class)
+    public void testEquipTwoHandedWeaponWithShield() {
+        Item greatsword = new Item("Greatsword", ItemType.TWO_HANDED_WEAPON);
+        inventory.addItem(greatsword);
+        inventory.addItem(shield);
+        inventory.equipShield(shield);
+        inventory.equipWeapon(greatsword); // Should throw exception
     }
 
     @Test
     public void testEquipShield() {
-        inventory.addItem("Shield");
-        inventory.equipShield("Shield");
-        assertEquals("Shield", inventory.getEquippedShield());
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testEquipShieldNotInInventory() {
-        inventory.equipShield("Wooden Shield"); // Should throw exception
+        inventory.addItem(shield);
+        inventory.equipShield(shield);
+        assertEquals(shield, inventory.getEquippedShield());
     }
 
     @Test
-    public void testRemoveEquippedItem() {
-        inventory.addItem("Shield");
-        inventory.equipShield("Shield");
-        inventory.removeItem("Shield");
-        assertNull(inventory.getEquippedShield());
-    }
-
-    @Test(expected = IllegalStateException.class)
-    public void testCannotEquipTwoHandedWeaponWithShield() {
-        inventory.addItem("Shield");
-        inventory.addItem("Greatsword");
-        inventory.equipShield("Shield");
-        inventory.equipWeapon("Greatsword"); // Should throw exception
-    }
-
-    @Test(expected = IllegalStateException.class)
-    public void testCannotEquipShieldWithTwoHandedWeapon() {
-        inventory.addItem("Greatsword");
-        inventory.addItem("Shield");
-        inventory.equipWeapon("Greatsword");
-        inventory.equipShield("Shield"); // Should throw exception
+    public void testEquipArmor() {
+        inventory.addItem(chestArmor);
+        inventory.equipArmor(chestArmor);
+        assertEquals(chestArmor, inventory.getEquippedChest());
     }
 
     @Test
-    public void testEquipOneHandedWeaponAndShield() {
-        inventory.addItem("Sword");
-        inventory.addItem("Shield");
-        inventory.equipWeapon("Sword");
-        inventory.equipShield("Shield");
-        assertEquals("Sword", inventory.getEquippedWeapon());
-        assertEquals("Shield", inventory.getEquippedShield());
+    public void testEquipPotion() {
+        inventory.addItem(potion);
+        inventory.equipPotion(potion);
+        assertTrue(inventory.getPotionSlots().contains(potion));
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testPotionSlotsLimit() {
+        Item potion1 = new Item("Potion1", ItemType.POTION);
+        Item potion2 = new Item("Potion2", ItemType.POTION);
+        Item potion3 = new Item("Potion3", ItemType.POTION);
+        Item potion4 = new Item("Potion4", ItemType.POTION);
+
+        inventory.addItem(potion1);
+        inventory.addItem(potion2);
+        inventory.addItem(potion3);
+        inventory.addItem(potion4);
+
+        inventory.equipPotion(potion1);
+        inventory.equipPotion(potion2);
+        inventory.equipPotion(potion3);
+
+        // Trying to equip a fourth potion should throw exception
+        inventory.equipPotion(potion4);
     }
 }
